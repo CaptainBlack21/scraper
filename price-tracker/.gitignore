@@ -1,0 +1,34 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Expo / React Native
+.expo/
+.expo-shared/
+*.expo
+
+# TypeScript
+*.tsbuildinfo
+
+# OS dosyaları
+.DS_Store
+Thumbs.db
+
+# Environment dosyaları
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+ios/build/
+android/build/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
