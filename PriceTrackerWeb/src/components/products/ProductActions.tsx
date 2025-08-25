@@ -7,47 +7,45 @@ interface Props {
 
 const ProductActions: React.FC<Props> = ({ onRefresh }) => {
   const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!url) return;
+    if (!url.trim()) {
+      setError("Lütfen geçerli bir URL giriniz");
+      return;
+    }
     try {
       await addProduct(url);
       setUrl("");
+      setError("");
       onRefresh();
     } catch (err: any) {
-      alert(err.response?.data?.error || "Ürün eklenirken hata oluştu");
+      setError(err.response?.data?.error || "Ürün eklenirken hata oluştu");
     }
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",      // dar ekranda alt satıra geçsin
-        alignItems: "center",
-        gap: 10,
-        marginBottom: 20,
-        width: "100%",
-      }}
-    >
-      {/* Form + Ekle */}
+    <div style={{ width: "100%", marginBottom: 20 }}>
       <form
         onSubmit={handleSubmit}
         style={{
           display: "flex",
-          flex: "1 1 auto",    // kalan alanı al
+          flexWrap: "wrap", // dar ekranda alta geçer
+          alignItems: "center",
           gap: 10,
-          minWidth: 200,
         }}
       >
         <input
           type="text"
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            if (error) setError("");
+          }}
           placeholder="Amazon ürün URL'si"
           style={{
-            flex: 1,           // input kalan alanın tamamını kaplar
+            flex: 1,
             minWidth: 150,
             padding: 8,
             borderRadius: 6,
@@ -68,23 +66,28 @@ const ProductActions: React.FC<Props> = ({ onRefresh }) => {
         >
           Ekle
         </button>
+        <button
+          type="button"
+          onClick={onRefresh}
+          style={{
+            padding: "8px 16px",
+            borderRadius: 6,
+            border: "none",
+            backgroundColor: "#28a745",
+            color: "#fff",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Yenile
+        </button>
       </form>
 
-      {/* Yenile butonu */}
-      <button
-        onClick={onRefresh}
-        style={{
-          padding: "8px 16px",
-          borderRadius: 6,
-          border: "none",
-          backgroundColor: "#28a745",
-          color: "#fff",
-          cursor: "pointer",
-          whiteSpace: "nowrap",
-        }}
-      >
-        Yenile
-      </button>
+      {error && (
+        <span style={{ color: "red", fontSize: 12, marginTop: 5, display: "block" }}>
+          {error}
+        </span>
+      )}
     </div>
   );
 };
