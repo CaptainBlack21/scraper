@@ -13,7 +13,7 @@ const ProductCard: React.FC<Props> = ({ product }) => {
         backgroundColor: "#fff",
         borderRadius: 12,
         padding: 15,
-        width: 200,
+        width: 200,        // sabit genişlik, grid ile uyumlu
         height: 200,
         boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         transition: "transform 0.2s, box-shadow 0.2s",

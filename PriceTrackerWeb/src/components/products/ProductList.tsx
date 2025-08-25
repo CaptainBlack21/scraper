@@ -20,16 +20,11 @@ const ProductList: React.FC = () => {
         display: "flex",
         flexWrap: "wrap",
         gap: 10,
+        justifyContent: "flex-start",
       }}
     >
       {[...products].reverse().map((p) => (
-        <div
-          key={p._id}
-          style={{
-            flex: "1 1 200px", // minimum 200px, gerekirse büyüyebilir
-            maxWidth: "100%",
-          }}
-        >
+        <div key={p._id} style={{ flex: "0 0 200px" }}>
           <ProductCard product={p} />
         </div>
       ))}

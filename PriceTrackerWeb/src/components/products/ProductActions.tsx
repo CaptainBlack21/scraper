@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { addProduct } from "../../api/productApi";
 
 interface Props {
-  onRefresh: () => void; // eskiden onAdd idi, şimdi hem ekleme hem yenileme için kullanacağız
+  onRefresh: () => void;
 }
 
 const ProductActions: React.FC<Props> = ({ onRefresh }) => {
@@ -14,22 +14,45 @@ const ProductActions: React.FC<Props> = ({ onRefresh }) => {
     try {
       await addProduct(url);
       setUrl("");
-      onRefresh(); // ürün eklendikten sonra sayfa yenilensin
+      onRefresh();
     } catch (err: any) {
       alert(err.response?.data?.error || "Ürün eklenirken hata oluştu");
     }
   };
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 0 20px 0" }}>
-      {/* Ürün ekleme formu */}
-      <form onSubmit={handleSubmit} style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",      // dar ekranda alt satıra geçsin
+        alignItems: "center",
+        gap: 10,
+        marginBottom: 20,
+        width: "100%",
+      }}
+    >
+      {/* Form + Ekle */}
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "flex",
+          flex: "1 1 auto",    // kalan alanı al
+          gap: 10,
+          minWidth: 200,
+        }}
+      >
         <input
           type="text"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="Amazon ürün URL'si"
-          style={{ flex: 1, padding: 8, borderRadius: 6, border: "1px solid #ccc" }}
+          style={{
+            flex: 1,           // input kalan alanın tamamını kaplar
+            minWidth: 150,
+            padding: 8,
+            borderRadius: 6,
+            border: "1px solid #ccc",
+          }}
         />
         <button
           type="submit"
@@ -40,6 +63,7 @@ const ProductActions: React.FC<Props> = ({ onRefresh }) => {
             backgroundColor: "#007bff",
             color: "#fff",
             cursor: "pointer",
+            whiteSpace: "nowrap",
           }}
         >
           Ekle
@@ -48,7 +72,7 @@ const ProductActions: React.FC<Props> = ({ onRefresh }) => {
 
       {/* Yenile butonu */}
       <button
-        onClick={onRefresh} // tıklayınca direkt sayfa yenileniyor
+        onClick={onRefresh}
         style={{
           padding: "8px 16px",
           borderRadius: 6,
@@ -56,6 +80,7 @@ const ProductActions: React.FC<Props> = ({ onRefresh }) => {
           backgroundColor: "#28a745",
           color: "#fff",
           cursor: "pointer",
+          whiteSpace: "nowrap",
         }}
       >
         Yenile

@@ -1,20 +1,31 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import ProductDetail from "./pages/ProductDetail";
-import AddProduct from "./pages/AddProduct";
 import Header from "./components/common/Header";
 
 const App: React.FC = () => {
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  useEffect(() => {
+    const header = document.getElementById("app-header");
+    if (header) {
+      setHeaderHeight(header.offsetHeight);
+    }
+    const handleResize = () => {
+      if (header) setHeaderHeight(header.offsetHeight);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <Router>
       <Header />
-      <div style={{ padding: "20px", paddingTop: "50px" }}>
-        {/* paddingTop header yüksekliği + ekstra boşluk */}
+      <div style={{ padding: 20, paddingTop: headerHeight + 10 }}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/add-product" element={<AddProduct />} />
         </Routes>
       </div>
     </Router>

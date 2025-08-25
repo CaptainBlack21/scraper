@@ -3,6 +3,7 @@ import React from "react";
 const Header: React.FC = () => {
   return (
     <header
+      id="app-header"
       style={{
         position: "fixed",
         top: 0,

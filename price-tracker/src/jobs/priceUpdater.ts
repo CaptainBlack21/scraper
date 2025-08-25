@@ -2,21 +2,21 @@ import cron from "node-cron";
 import nodemailer from "nodemailer";
 import Product from "../models/Product";
 import { scrapeAmazonProduct } from "../services/scraper";
-
+import dotenv from "dotenv";
 // Nodemailer transporter ayarı
 const transporter = nodemailer.createTransport({
   service: "gmail", // Gmail kullanıyorsan
   auth: {
-    user: "omeryagmur666@gmail.com", // kendi mailin
-    pass: "jcvo chhv bbry jole", 
+    user: process.env.EMAIL_USER, // kendi mailin
+    pass: process.env.EMAIL_PASS, // uygulama şifresi
   },
 });
 
 // Alarm mail gönderme fonksiyonu
 const sendAlarmEmail = async (productTitle: string, price: number) => {
   const mailOptions = {
-    from: "omeryagmur666@gmail.com",
-    to: "omeryyagmur@gmail.com", // alarm e-maili alacak kişi
+    from:  process.env.EMAIL_USER,
+    to: process.env.EMAIL_TO, // alarm e-maili alacak kişi
     subject: `🔔 Fiyat Alarmı: ${productTitle}`,
     text: `${productTitle} ürünü alarm fiyatına düştü. Şu anki fiyat: ${price} TL`,
   };
