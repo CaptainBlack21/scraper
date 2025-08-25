@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:copy": "vite build && xcopy dist ..\\price-tracker\\public /E /I",
     "lint": "eslint .",
     "preview": "vite preview"
   },
