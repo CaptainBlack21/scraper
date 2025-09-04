@@ -135,31 +135,23 @@ const ProcessedList: React.FC = () => {
           marginBottom: 12,
         }}
       >
-        <h2 style={{ margin: 0, fontSize: 16, color: "#111827" }}>Son Değişen Fiyatlar</h2>
+        <h2 style={{ margin: 0, fontSize: 16, color: "#111827" }}>
+          Son Değişen Fiyatlar
+        </h2>
 
-        {/* Daha kuvvetli stiller (reset'lere dayanıklı) */}
         <button
           onClick={pull}
           title="Yenile"
           style={{
-            appearance: "none",
-            WebkitAppearance: "none",
             border: "none",
-            outline: "none",
-            background: "#3b82f6", // mavi
+            background: "#3b82f6",
             color: "#ffffff",
             borderRadius: 8,
             padding: "8px 12px",
             fontSize: 12,
             fontWeight: 600,
             cursor: "pointer",
-            boxShadow: "0 2px 6px rgba(59,130,246,0.35)",
-            transition: "transform .1s ease, filter .1s ease",
           }}
-          onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.98)")}
-          onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-          onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(0.95)")}
-          onMouseLeave={(e) => (e.currentTarget.style.filter = "brightness(1)")}
         >
           🔄 Yenile
         </button>
@@ -199,20 +191,25 @@ const ProcessedList: React.FC = () => {
                   padding: 12,
                   background: "#ffffff",
                   display: "grid",
-                  gridTemplateColumns: "1fr auto",
-                  gap: 8,
+                  gridTemplateColumns: "auto 1fr auto",
+                  gap: 10,
                   alignItems: "center",
-                  transition: "box-shadow .15s, transform .15s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.08)";
-                  e.currentTarget.style.transform = "translateY(-1px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = "none";
-                  e.currentTarget.style.transform = "none";
                 }}
               >
+                {/* ✅ Resim */}
+                {p.image && (
+                  <img
+                    src={p.image}
+                    alt={p.title}
+                    style={{
+                      width: 45,
+                      height: 45,
+                      objectFit: "contain",
+                      borderRadius: 6,
+                    }}
+                  />
+                )}
+
                 <div style={{ minWidth: 0 }}>
                   <div
                     title={p.title}
@@ -237,37 +234,25 @@ const ProcessedList: React.FC = () => {
                       flexWrap: "wrap",
                     }}
                   >
-                    {/* Yeni fiyat */}
-                    <span style={{ fontSize: 12, color: "#111827", fontWeight: 700 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700 }}>
                       {formatTL(p.newPrice)}
                     </span>
-
-                    {/* Önceki fiyat */}
                     <span style={{ fontSize: 12, color: "#6b7280" }}>
                       (Önce: {formatTL(p.prevPrice)})
                     </span>
-
-                    {/* Renkli rozet */}
                     <span
                       style={{
                         marginLeft: 6,
                         fontSize: 11,
                         color: "#ffffff",
-                        background: badgeBg, // kırmızı/yeşil/gri
+                        background: badgeBg,
                         padding: "3px 10px",
                         borderRadius: 999,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
                       }}
                       title={pctText}
                     >
-                      <span style={{ fontWeight: 800 }}>{arrow(p.direction)}</span>
-                      {pctText}
+                      {arrow(p.direction)} {pctText}
                     </span>
-
-                    {/* Zaman */}
                     <span
                       style={{
                         marginLeft: "auto",
@@ -285,34 +270,22 @@ const ProcessedList: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Link */}
                 {p.url && (
                   <a
                     href={p.url}
                     target="_blank"
                     rel="noreferrer"
                     style={{
-                      appearance: "none",
-                      WebkitAppearance: "none",
                       textDecoration: "none",
-                      border: "none",
-                      outline: "none",
-                      background: "#10b981", // yeşil
-                      color: "#ffffff",
+                      background: "#10b981",
+                      color: "#fff",
                       borderRadius: 8,
-                      padding: "8px 10px",
+                      padding: "6px 10px",
                       fontSize: 12,
                       fontWeight: 600,
-                      boxShadow: "0 2px 6px rgba(16,185,129,0.35)",
-                      transition: "transform .1s ease, filter .1s ease",
-                      display: "inline-block",
                     }}
-                    onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.98)")}
-                    onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                    onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(0.95)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.filter = "brightness(1)")}
                   >
-                    Ürünü gör ↗
+                    Gör
                   </a>
                 )}
               </div>

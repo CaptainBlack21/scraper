@@ -3,6 +3,7 @@ export interface IProcessed {
   productId: string;
   title: string;
   url?: string;
+  image?: string; // ✅ Yeni
 
   prevPrice: number;
   newPrice: number;

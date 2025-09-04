@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface Props {
   currentAlarm: number;
@@ -7,72 +7,150 @@ interface Props {
 }
 
 const AlarmUpdate: React.FC<Props> = ({ currentAlarm, onSave, onCancel }) => {
-  const [value, setValue] = useState(currentAlarm);
+  // string state → NaN/boş durumda input kırılmasın
+  const [value, setValue] = useState(
+    Number.isFinite(currentAlarm) ? String(currentAlarm) : ""
+  );
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Açılınca input’a fokusla
+    inputRef.current?.focus();
+
+    // ESC ile kapat
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCancel();
+      if (e.key === "Enter") handleSave();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) onCancel(); // backdrop’a tıklanırsa kapat
+  };
+
+  const handleSave = () => {
+    const n = parseFloat(value.replace(",", "."));
+    if (!Number.isFinite(n) || n < 0) {
+      // basit validation
+      inputRef.current?.focus();
+      return;
+    }
+    onSave(n);
+  };
 
   return (
     <div
+      onClick={handleBackdropClick}
       style={{
         position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
+        inset: 0,
         backgroundColor: "rgba(0,0,0,0.5)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 1000,
+        zIndex: 9999, // temalardan bağımsız görünürlük
+        padding: 16,
       }}
+      role="dialog"
+      aria-modal="true"
     >
       <div
+        ref={dialogRef}
         style={{
-          backgroundColor: "#ffffffff",
+          // Tema-bağımsız net kontrast
+          backgroundColor: "#ffffff",
+          color: "#111827",
           padding: 20,
           borderRadius: 12,
-          minWidth: 300,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          width: "min(420px, 100%)",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+          border: "1px solid #e5e7eb",
         }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ marginBottom: 10,backgroundColor:"#ffffffff"}}>Alarm Fiyatını Güncelle</h3>
+        <h3
+          style={{
+            marginTop: 0,
+            marginBottom: 12,
+            fontSize: 18,
+            lineHeight: 1.3,
+            fontWeight: 700,
+            color: "#111827", // zıt renk
+          }}
+        >
+          Alarm Fiyatını Güncelle
+        </h3>
+
+        <label
+          htmlFor="alarm-price"
+          style={{
+            display: "block",
+            marginBottom: 6,
+            fontSize: 13,
+            color: "#374151",
+          }}
+        >
+          Alarm fiyatı (TL)
+        </label>
+
         <input
+          id="alarm-price"
+          ref={inputRef}
           type="number"
+          inputMode="decimal"
+          step="0.01"
           value={value}
-          onChange={(e) => setValue(parseFloat(e.target.value))}
+          onChange={(e) => setValue(e.target.value)}
           style={{
             width: "100%",
-            padding: 8,
-            marginBottom: 15,
-            borderRadius: 6,
-            border: "1px solid #ccc",
+            padding: "10px 12px",
+            marginBottom: 14,
+            borderRadius: 8,
+            border: "1px solid #d1d5db",
+            outline: "none",
+            color: "#111827",
+            backgroundColor: "#ffffff",
           }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = "#3b82f6")}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
         />
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <button
             onClick={onCancel}
             style={{
-              padding: "8px 12px",
-              marginRight: 10,
-              borderRadius: 6,
-              border: "1px solid #ccc",
-              backgroundColor: "#f0f0f0ff",
+              padding: "10px 14px",
+              borderRadius: 8,
+              border: "1px solid #e5e7eb",
+              backgroundColor: "#f3f4f6",
+              color: "#111827",
               cursor: "pointer",
+              fontWeight: 600,
             }}
           >
             İptal
           </button>
           <button
-            onClick={() => onSave(value)}
+            onClick={handleSave}
             style={{
-              padding: "8px 12px",
-              borderRadius: 6,
+              padding: "10px 14px",
+              borderRadius: 8,
               border: "none",
-              backgroundColor: "#007bff",
-              color: "#fff",
+              backgroundColor: "#2563eb",
+              color: "#ffffff",
               cursor: "pointer",
+              fontWeight: 700,
             }}
           >
             Kaydet
           </button>
+        </div>
+
+        <div style={{ marginTop: 10, fontSize: 12, color: "#6b7280" }}>
+          İpucu: <b>Enter</b> ile kaydedebilir, <b>Esc</b> ile kapatabilirsin.
         </div>
       </div>
     </div>

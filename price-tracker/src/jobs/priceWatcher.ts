@@ -47,13 +47,16 @@ export function startPriceWatcher() {
         });
 
         if (res.notModified) {
-          // İçerik değişmemiş → sadece meta güncelle
           product.lastEtag = res.etag ?? product.lastEtag;
           product.lastModified = res.lastModified ?? product.lastModified;
           product.lastCheckedAt = new Date();
           await product.save();
-          // ❗ KAYIT ALMIYORUZ (senin isteğin)
           continue;
+        }
+
+        // ✅ Yeni: resim kaydet/güncelle
+        if (res.image && (!product.image || product.image !== res.image)) {
+          product.image = res.image;
         }
 
         if (typeof res.price === "number") {
@@ -61,15 +64,17 @@ export function startPriceWatcher() {
           const next = res.price;
 
           if (next !== prev) {
-            // fiyat değişti → ürün ve tarihçe güncelle
             product.currentPrice = next;
             product.priceHistory = product.priceHistory || [];
             product.priceHistory.push({ price: next, date: new Date() });
             if (product.priceHistory.length > 4) product.priceHistory.shift();
 
             if (product.alarmPrice > 0 && next <= product.alarmPrice) {
-              try { await sendAlarmEmail(product.title ?? "Ürün", next); }
-              catch (e: any) { console.error("📧 Mail hatası:", e?.message || e); }
+              try {
+                await sendAlarmEmail(product.title ?? "Ürün", next);
+              } catch (e: any) {
+                console.error("📧 Mail hatası:", e?.message || e);
+              }
             }
             console.log(`✅ ${product.title} → ${next}`);
           }
@@ -79,7 +84,6 @@ export function startPriceWatcher() {
           product.lastCheckedAt = new Date();
           await product.save();
 
-          // ❗ SADECE FİYAT DEĞİŞTİYSE KAYDET
           if (next !== prev) {
             const diff = next - prev;
             const diffPct = prev > 0 ? (diff / prev) * 100 : 0;
@@ -90,6 +94,7 @@ export function startPriceWatcher() {
               productId: product._id.toString(),
               title: product.title ?? "Ürün",
               url: product.url,
+              image: product.image, // ✅ Yeni alan
               prevPrice: prev,
               newPrice: next,
               diff,

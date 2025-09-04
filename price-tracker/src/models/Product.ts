@@ -3,7 +3,7 @@ import crypto from "crypto";
 
 function shard60(key: string): number {
   const h = crypto.createHash("sha1").update(key).digest();
-  const n = h.readUInt32BE(0); // ilk 4 bayttan pozitif 32-bit sayı
+  const n = h.readUInt32BE(0);
   return n % 60;
 }
 
@@ -18,10 +18,11 @@ export interface ProductDoc extends Document {
   currentPrice: number;
   priceHistory: PricePoint[];
   alarmPrice: number;
+  image?: string | null; // ✅ Yeni alan
 
   lastEtag?: string | null;
   lastModified?: string | null;
-  shardMinute: number;           // 0..59
+  shardMinute: number;
   cooldownUntil?: Date | null;
   lastCheckedAt?: Date | null;
 }
@@ -41,6 +42,7 @@ const ProductSchema = new Schema<ProductDoc>(
     currentPrice: { type: Number, default: 0 },
     priceHistory: { type: [PricePointSchema], default: [] },
     alarmPrice: { type: Number, default: 0 },
+    image: { type: String, default: null }, // ✅ Yeni alan
 
     lastEtag: { type: String, default: null },
     lastModified: { type: String, default: null },
@@ -62,21 +64,12 @@ const ProductSchema = new Schema<ProductDoc>(
   { timestamps: true }
 );
 
-// URL değişirse shard’ı deterministik olarak güncelle
 ProductSchema.pre("save", function (next) {
   if (this.isModified("url")) {
     (this as any).shardMinute = shard60(this.url || String(this._id));
   }
   next();
 });
-
-// (Opsiyonel) shardMinute’ı API response’undan gizlemek istersen aç:
-// ProductSchema.set("toJSON", {
-//   transform(_doc, ret) {
-//     // delete ret.shardMinute;
-//     return ret;
-//   },
-// });
 
 export default mongoose.models.Product ||
   mongoose.model<ProductDoc>("Product", ProductSchema);

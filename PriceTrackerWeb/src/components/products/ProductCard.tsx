@@ -24,14 +24,14 @@ const ProductCard: React.FC<Props> = ({ product }) => {
         position: "relative",
         backgroundColor: "#fff",
         borderRadius: 12,
-        padding: 15,
-        width: "100%", // 👈 bulunduğu container kadar genişler
-        height: 200, // yükseklik sabit
+        padding: 12,
+        width: "100%",
+        minHeight: 120,
         boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         transition: "transform 0.2s, box-shadow 0.2s",
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 12,
         cursor: "pointer",
         outline: alarmHit ? "2px solid #28a745" : undefined,
       }}
@@ -63,16 +63,39 @@ const ProductCard: React.FC<Props> = ({ product }) => {
         </span>
       )}
 
+      {/* ✅ Küçük kare resim kutusu */}
       <div
         style={{
+          width: 80,
+          height: 80,
+          border: "1px solid #e5e7eb",
+          borderRadius: 8,
+          background: "#f9fafb",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
           overflow: "hidden",
-          textOverflow: "ellipsis",
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
         }}
       >
-        <h3 style={{ fontSize: "1rem", marginBottom: 10, color: "#007bff" }}>
+        {product.image ? (
+          <img
+            src={product.image}
+            alt={product.title}
+            style={{
+              maxWidth: "100%",
+              maxHeight: "100%",
+              objectFit: "contain",
+            }}
+          />
+        ) : (
+          <span style={{ fontSize: 12, color: "#9ca3af" }}>🖼️</span>
+        )}
+      </div>
+
+      {/* Sağ taraf: ürün bilgileri */}
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+        <h3 style={{ fontSize: "1rem", margin: 0, color: "#007bff" }}>
           <Link
             to={`/product/${product._id}`}
             style={{ textDecoration: "none", color: "#007bff" }}
@@ -81,31 +104,30 @@ const ProductCard: React.FC<Props> = ({ product }) => {
             {product.title}
           </Link>
         </h3>
+
+        <p style={{ margin: 0, fontWeight: "bold", color: "#555" }}>
+          Fiyat: {formatTL(product.currentPrice)}
+        </p>
+
+        <p style={{ margin: 0, color: "#777" }}>
+          Alarm Fiyatı: {formatTL(product.alarmPrice as number | null)}
+        </p>
+
+        <a
+          href={product.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: "#007bff",
+            fontSize: "0.85rem",
+            textDecoration: "underline",
+            wordBreak: "break-word",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          Ürünü Gör
+        </a>
       </div>
-
-      <p style={{ margin: "5px 0", fontWeight: "bold", color: "#555" }}>
-        Fiyat: {formatTL(product.currentPrice)}
-      </p>
-
-      <p style={{ margin: "5px 0", color: "#777" }}>
-        Alarm Fiyatı: {formatTL(product.alarmPrice as number | null)}
-      </p>
-
-      <a
-        href={product.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          marginTop: "auto",
-          color: "#007bff",
-          fontSize: "0.9rem",
-          textDecoration: "underline",
-          wordBreak: "break-word",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        Ürünü Gör
-      </a>
     </div>
   );
 };

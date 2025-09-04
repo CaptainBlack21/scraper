@@ -15,6 +15,7 @@ export type ScrapeResult = {
   price?: number;
   currency?: string;
   rawPriceText?: string;
+  image?: string; // ✅ Yeni alan
   etag?: string | null;
   lastModified?: string | null;
   notModified?: boolean;
@@ -128,6 +129,15 @@ function extractPriceAndCurrency($: cheerio.CheerioAPI): {
   return {};
 }
 
+// ✅ Yeni: ürün resmini çek
+function extractImage($: cheerio.CheerioAPI): string | undefined {
+  const img =
+    $("#imgTagWrapperId img#landingImage").attr("src") ||
+    $("#imgBlkFront").attr("src") ||
+    $('meta[property="og:image"]').attr("content");
+  return img || undefined;
+}
+
 export async function scrapeAmazonProduct(
   url: string,
   opts: ScrapeOptions = {}
@@ -179,11 +189,14 @@ export async function scrapeAmazonProduct(
     if (price == null || !Number.isFinite(price))
       throw new Error(`Fiyat sayıya dönüştürülemedi: "${priceText}"`);
 
+    const image = extractImage($); // ✅ Yeni
+
     return {
       title,
       price,
       currency,
       rawPriceText: priceText,
+      image, // ✅ Yeni
       etag: res.headers["etag"] ?? null,
       lastModified: res.headers["last-modified"] ?? null,
       notModified: false,

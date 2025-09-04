@@ -6,4 +6,5 @@ export interface IProduct {
   priceHistory: { price: number; date: string }[];
   lastUpdated: string;
   alarmPrice: number;
+  image?: string | null; // ✅ Yeni
 }

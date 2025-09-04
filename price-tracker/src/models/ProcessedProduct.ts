@@ -4,11 +4,12 @@ export interface ProcessedDoc extends Document {
   productId: string;
   title: string;
   url?: string;
+  image?: string; // ✅ Yeni alan
 
-  prevPrice: number;   // önceki fiyat
-  newPrice: number;    // yeni fiyat
-  diff: number;        // new - prev
-  diffPct: number;     // yüzde fark (negatif düşüş)
+  prevPrice: number;
+  newPrice: number;
+  diff: number;
+  diffPct: number;
   direction: "up" | "down" | "same";
 
   processedAt: Date;
@@ -19,6 +20,7 @@ const ProcessedSchema = new Schema<ProcessedDoc>(
     productId: { type: String, required: true, index: true },
     title: { type: String, required: true },
     url: { type: String },
+    image: { type: String }, // ✅ Yeni alan
 
     prevPrice: { type: Number, required: true },
     newPrice: { type: Number, required: true },
@@ -30,9 +32,6 @@ const ProcessedSchema = new Schema<ProcessedDoc>(
   },
   { timestamps: true }
 );
-
-// (opsiyonel) 7 gün sonra otomatik temizle
-// ProcessedSchema.index({ processedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7 });
 
 export default mongoose.models.ProcessedProduct ||
   mongoose.model<ProcessedDoc>("ProcessedProduct", ProcessedSchema);

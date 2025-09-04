@@ -22,7 +22,6 @@ export const updateAlarm = async (id: string, alarmPrice: number) => {
   return res.data;
 };
 
-// 🔍 Yeni: Ürün arama
 export type SearchResponse = {
   items: IProduct[];
   total: number;

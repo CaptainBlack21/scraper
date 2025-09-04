@@ -18,14 +18,12 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "URL gerekli." });
     }
 
-    // URL zaten var mı kontrol et
     const existing = await Product.findOne({ url });
     if (existing) {
       return res.status(400).json({ error: "Ürün zaten mevcut." });
     }
 
-    // Scraper çalıştır
-    const { title, price } = await scrapeAmazonProduct(url);
+    const { title, price, image } = await scrapeAmazonProduct(url); // ✅ image alındı
 
     if (!title) {
       return res.status(400).json({ error: "Başlık bulunamadı!" });
@@ -34,18 +32,17 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "Fiyat bulunamadı!" });
     }
 
-    // MongoDB'ye kaydet
     const product = new Product({
       url,
       title,
       currentPrice: price,
       priceHistory: [{ price, date: new Date() }],
+      image: image ?? null, // ✅ kaydet
     });
 
     await product.save();
     res.json(product);
   } catch (err: any) {
-    // Hata tipine göre mesaj
     if (typeof err?.message === "string" && err.message.includes("Fiyat bulunamadı")) {
       res.status(400).json({ error: "Fiyat bulunamadı!" });
     } else {
@@ -53,7 +50,6 @@ router.post("/", async (req, res) => {
     }
   }
 });
-
 /**
  * Tüm ürünleri getir — alarmı vuranlar en üstte
  */
