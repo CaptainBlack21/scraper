@@ -20,7 +20,7 @@ const arrow = (d: IProcessed["direction"] | undefined) =>
   d === "down" ? "↓" : d === "up" ? "↑" : "→";
 
 const colorFor = (d: IProcessed["direction"] | undefined) =>
-  d === "down" ? "#16a34a" : d === "up" ? "#dc2626" : "#6b7280"; // yeşil/kırmızı/gri
+  d === "down" ? "#16a34a" : d === "up" ? "#dc2626" : "#6b7280";
 
 const timeAgo = (iso: string) => {
   const t = new Date(iso).getTime();
@@ -35,7 +35,6 @@ const timeAgo = (iso: string) => {
   return `${sec} sn önce`;
 };
 
-// Eski kayıtlarla geriye uyum için normalize edelim
 const normalize = (p: any) => {
   const fallbackNew = safeNumber(p.newPrice) ?? safeNumber(p.price) ?? null;
   const fallbackPrev =
@@ -109,9 +108,6 @@ const ProcessedList: React.FC = () => {
 
   useEffect(() => {
     pull();
-    // İstersen otomatik yenile:
-    // const t = setInterval(pull, 60_000);
-    // return () => clearInterval(t);
   }, []);
 
   return (
@@ -126,7 +122,6 @@ const ProcessedList: React.FC = () => {
         top: 12,
       }}
     >
-      {/* Başlık + Yenile */}
       <div
         style={{
           display: "flex",
@@ -157,7 +152,6 @@ const ProcessedList: React.FC = () => {
         </button>
       </div>
 
-      {/* Liste */}
       <div
         style={{
           maxHeight: 420,
@@ -196,19 +190,33 @@ const ProcessedList: React.FC = () => {
                   alignItems: "center",
                 }}
               >
-                {/* ✅ Resim */}
-                {p.image && (
-                  <img
-                    src={p.image}
-                    alt={p.title}
-                    style={{
-                      width: 45,
-                      height: 45,
-                      objectFit: "contain",
-                      borderRadius: 6,
-                    }}
-                  />
-                )}
+                {/* ✅ Resim ya da boş kutu */}
+                <div
+                  style={{
+                    width: 45,
+                    height: 45,
+                    borderRadius: 6,
+                    background: p.image ? "transparent" : "#f3f4f6",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {p.image ? (
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        borderRadius: 6,
+                      }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: 10, color: "#9ca3af" }}>—</span>
+                  )}
+                </div>
 
                 <div style={{ minWidth: 0 }}>
                   <div
@@ -234,7 +242,6 @@ const ProcessedList: React.FC = () => {
                       flexWrap: "wrap",
                     }}
                   >
-                    {/* ✅ Fiyat renkli */}
                     <span
                       style={{
                         fontSize: 12,
@@ -249,11 +256,9 @@ const ProcessedList: React.FC = () => {
                     >
                       {formatTL(p.newPrice)}
                     </span>
-
                     <span style={{ fontSize: 12, color: "#6b7280" }}>
                       (Önce: {formatTL(p.prevPrice)})
                     </span>
-
                     <span
                       style={{
                         marginLeft: 6,
@@ -267,7 +272,6 @@ const ProcessedList: React.FC = () => {
                     >
                       {arrow(p.direction)} {pctText}
                     </span>
-
                     <span
                       style={{
                         marginLeft: "auto",
