@@ -234,12 +234,26 @@ const ProcessedList: React.FC = () => {
                       flexWrap: "wrap",
                     }}
                   >
-                    <span style={{ fontSize: 12, fontWeight: 700 }}>
+                    {/* ✅ Fiyat renkli */}
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color:
+                          p.direction === "down"
+                            ? "#16a34a"
+                            : p.direction === "up"
+                            ? "#dc2626"
+                            : "#111827",
+                      }}
+                    >
                       {formatTL(p.newPrice)}
                     </span>
+
                     <span style={{ fontSize: 12, color: "#6b7280" }}>
                       (Önce: {formatTL(p.prevPrice)})
                     </span>
+
                     <span
                       style={{
                         marginLeft: 6,
@@ -253,6 +267,7 @@ const ProcessedList: React.FC = () => {
                     >
                       {arrow(p.direction)} {pctText}
                     </span>
+
                     <span
                       style={{
                         marginLeft: "auto",
