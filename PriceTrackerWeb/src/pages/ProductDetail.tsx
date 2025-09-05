@@ -38,6 +38,7 @@ const ProductDetail: React.FC = () => {
   const [product, setProduct] = useState<IProduct | null>(null);
   const [showAlarmModal, setShowAlarmModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showTable, setShowTable] = useState(true); // DEFAULT TRUE
 
   const fetchProduct = async () => {
     try {
@@ -63,6 +64,13 @@ const ProductDetail: React.FC = () => {
       })),
     [product]
   );
+
+  // NEW: Tablo için sıralı veri
+  const tableData = useMemo(() => {
+    const list = [...(product?.priceHistory ?? [])];
+    list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return list;
+  }, [product]);
 
   const handleDelete = async () => {
     if (!product) return;
@@ -298,6 +306,7 @@ const ProductDetail: React.FC = () => {
             )}
           </div>
 
+          {/* BUTONLAR */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button
               onClick={() => setShowAlarmModal(true)}
@@ -330,7 +339,132 @@ const ProductDetail: React.FC = () => {
             >
               Yenile
             </button>
+
+            {/* NEW: Fiyat geçmişi tablosu aç/kapat */}
+            <button
+              onClick={() => setShowTable((v) => !v)}
+              style={{
+                background: "#6b7280",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                padding: "10px 14px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              {showTable ? "Tabloyu Gizle" : "Fiyat Geçmişi (Tablo)"}
+            </button>
           </div>
+
+          {/* NEW: Tablo alanı */}
+          {showTable && (
+            <div
+              style={{
+                marginTop: 10,
+                border: "1px solid #e5e7eb",
+                borderRadius: 12,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  padding: "10px 12px",
+                  background: "#f9fafb",
+                  borderBottom: "1px solid #e5e7eb",
+                  fontWeight: 600,
+                  color: "#111827",
+                }}
+              >
+                Fiyat Geçmişi (Tablo)
+              </div>
+              {tableData.length ? (
+                <div style={{ maxHeight: 260, overflow: "auto" }}>
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "separate",
+                      borderSpacing: 0,
+                      fontSize: 13,
+                      color: "#111827",
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        <th
+                          style={{
+                            position: "sticky",
+                            top: 0,
+                            background: "#fff",
+                            borderBottom: "1px solid #e5e7eb",
+                            textAlign: "left",
+                            padding: 10,
+                          }}
+                        >
+                          Tarih
+                        </th>
+                        <th
+                          style={{
+                            position: "sticky",
+                            top: 0,
+                            background: "#fff",
+                            borderBottom: "1px solid #e5e7eb",
+                            textAlign: "right",
+                            padding: 10,
+                          }}
+                        >
+                          Fiyat (TL)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tableData.map((row, idx) => {
+                        const prev = tableData[idx + 1]?.price; // bir önceki (daha eski) kayıt
+                        const hasPrev = typeof prev === "number" && !Number.isNaN(prev);
+                        const delta = hasPrev ? Number(row.price) - Number(prev) : 0;
+                        const up = delta > 0;
+                        const down = delta < 0;
+                        const same = delta === 0;
+                        const color = up ? "#991b1b" : down ? "#166534" : "#6b7280";
+                        const bg = up ? "#fee2e2" : down ? "#dcfce7" : "transparent";
+                        const arrow = up ? "▲" : down ? "▼" : "—";
+                        const pct = hasPrev && prev !== 0 ? Math.abs((delta / Number(prev)) * 100) : 0;
+
+                        return (
+                          <tr key={`${row.date}-${idx}`}>
+                            <td style={{ padding: 10, borderBottom: "1px solid #f3f4f6" }}>
+                              {new Date(row.date).toLocaleString("tr-TR")}
+                            </td>
+                            <td
+                              style={{
+                                padding: 10,
+                                textAlign: "right",
+                                borderBottom: "1px solid #f3f4f6",
+                                fontVariantNumeric: "tabular-nums",
+                                color,
+                                background: bg,
+                                borderRadius: 8,
+                              }}
+                              title={hasPrev ? `${up ? "Önceye göre zam" : down ? "Önceye göre indirim" : "Değişim yok"}` : undefined}
+                            >
+                              {Number(row.price).toLocaleString("tr-TR")} TL
+                              {hasPrev && (
+                                <span style={{ marginLeft: 8, fontSize: 12, color }}>
+                                  {arrow} {pct.toFixed(2)}%
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div style={{ padding: 16, color: "#6b7280" }}>Kayıt yok.</div>
+              )}
+            </div>
+          )}
 
           <div style={{ fontSize: 12, color: "#6b7280" }}>
             Son güncellemeler grafik bölümünden takip edilebilir.
