@@ -131,12 +131,29 @@ function extractPriceAndCurrency($: cheerio.CheerioAPI): {
 
 // ✅ Yeni: ürün resmini çek
 function extractImage($: cheerio.CheerioAPI): string | undefined {
-  const img =
-    $("#imgTagWrapperId img#landingImage").attr("src") ||
-    $("#imgBlkFront").attr("src") ||
-    $('meta[property="og:image"]').attr("content");
+  // 1. landingImage src
+  let img = $("#imgTagWrapperId img#landingImage").attr("src");
+
+  // 2. landingImage data-a-dynamic-image
+  if (!img) {
+    const dataImg = $("#imgTagWrapperId img#landingImage").attr("data-a-dynamic-image");
+    if (dataImg) {
+      try {
+        const parsed = JSON.parse(dataImg);
+        img = Object.keys(parsed)[0]; // ilk key büyük ihtimalle ana resim URL’si
+      } catch {}
+    }
+  }
+
+  // 3. Kitap kapağı gibi bazı özel durumlar
+  if (!img) img = $("#imgBlkFront").attr("src");
+
+  // 4. OpenGraph fallback
+  if (!img) img = $('meta[property="og:image"]').attr("content");
+
   return img || undefined;
 }
+
 
 export async function scrapeAmazonProduct(
   url: string,

@@ -1,4 +1,4 @@
-// scripts/backfillProcessedImages.ts
+// src/scripts/backfillProcessedImages.ts
 import "dotenv/config";
 import mongoose from "mongoose";
 import Product from "../models/Product";
@@ -12,7 +12,6 @@ async function main() {
   await mongoose.connect(uri as string, { serverSelectionTimeoutMS: 8000 } as any);
   console.log("✅ Mongo bağlandı");
 
-  // image alanı olmayan veya boş olan processed kayıtlar
   const query = {
     $or: [{ image: { $exists: false } }, { image: null }, { image: "" }],
   } as any;
@@ -33,13 +32,15 @@ async function main() {
     for (const it of items) {
       scanned++;
       if (!it.productId) continue;
-      const arr = byProductId.get(it.productId) || [];
+      const arr = byProductId.get(String(it.productId)) || [];
       arr.push(String(it._id));
-      byProductId.set(it.productId, arr);
+      byProductId.set(String(it.productId), arr);
     }
 
-    // İlgili ürünleri topla
-    const productIds = Array.from(byProductId.keys());
+    // ObjectId'ye cast et
+    const productIds = Array.from(byProductId.keys()).map((id) => new mongoose.Types.ObjectId(id));
+
+    // İlgili ürünleri çek
     const products = await Product.find({ _id: { $in: productIds } })
       .select({ _id: 1, image: 1 })
       .lean();
@@ -70,8 +71,6 @@ async function main() {
     } else {
       console.log(`📦 batch: scanned=${scanned}, fixed+=0 (total=${totalFixed})`);
     }
-
-    // Döngü: bir sonraki batch için devam
   }
 
   console.log(`✅ Bitti. Toplam güncellenen processed.image: ${totalFixed}`);

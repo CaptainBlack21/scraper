@@ -90,18 +90,19 @@ export function startPriceWatcher() {
             const direction: "up" | "down" | "same" =
               diff > 0 ? "up" : diff < 0 ? "down" : "same";
 
-            await new ProcessedProduct({
-              productId: product._id.toString(),
-              title: product.title ?? "Ürün",
-              url: product.url,
-              image: product.image, // ✅ Yeni alan
-              prevPrice: prev,
-              newPrice: next,
-              diff,
-              diffPct,
-              direction,
-              processedAt: new Date(),
-            }).save();
+           await new ProcessedProduct({
+                productId: product._id, // ✅ artık ObjectId
+                title: product.title ?? "Ürün",
+                url: product.url,
+                image: product.image,
+                prevPrice: prev,
+                newPrice: next,
+                diff,
+                diffPct,
+                direction,
+                processedAt: new Date(),
+              }).save();
+
           }
         }
       } catch (e: any) {

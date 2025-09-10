@@ -1,10 +1,11 @@
-import mongoose, { Schema, Document } from "mongoose";
+// src/models/ProcessedProduct.ts
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface ProcessedDoc extends Document {
-  productId: string;
+  productId: Types.ObjectId; // ✅ Artık ObjectId
   title: string;
   url?: string;
-  image?: string; // ✅ Yeni alan
+  image?: string;
 
   prevPrice: number;
   newPrice: number;
@@ -17,10 +18,10 @@ export interface ProcessedDoc extends Document {
 
 const ProcessedSchema = new Schema<ProcessedDoc>(
   {
-    productId: { type: String, required: true, index: true },
+    productId: { type: Schema.Types.ObjectId, ref: "Product", required: true, index: true }, // ✅
     title: { type: String, required: true },
     url: { type: String },
-    image: { type: String }, // ✅ Yeni alan
+    image: { type: String },
 
     prevPrice: { type: Number, required: true },
     newPrice: { type: Number, required: true },
