@@ -38,7 +38,7 @@ const ProductDetail: React.FC = () => {
   const [product, setProduct] = useState<IProduct | null>(null);
   const [showAlarmModal, setShowAlarmModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showTable, setShowTable] = useState(true); // DEFAULT TRUE
+  const [showTable, setShowTable] = useState(true);
 
   const fetchProduct = async () => {
     try {
@@ -56,20 +56,27 @@ const ProductDetail: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const chartData = useMemo(
-    () =>
+  // ✅ Grafik için TÜM kayıtlar (ISO tarih tut, sadece render'da formatla)
+  const chartData = useMemo(() => {
+    const arr =
       (product?.priceHistory ?? []).map((ph) => ({
-        price: ph.price,
-        date: new Date(ph.date).toLocaleDateString(),
-      })),
-    [product]
-  );
+        price: Number(ph.price),
+        dateISO: ph.date, // ham ISO tutuluyor
+      })) || [];
 
-  // NEW: Tablo için sıralı veri
+    // tarihleri artan sırada tut
+    arr.sort(
+      (a, b) =>
+        new Date(a.dateISO).getTime() - new Date(b.dateISO).getTime()
+    );
+    return arr;
+  }, [product]);
+
+  // ✅ Tablo için son 10 kayıt (tarihe göre sıralı)
   const tableData = useMemo(() => {
     const list = [...(product?.priceHistory ?? [])];
     list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    return list;
+    return list.slice(0, 10);
   }, [product]);
 
   const handleDelete = async () => {
@@ -174,7 +181,7 @@ const ProductDetail: React.FC = () => {
         </div>
       </div>
 
-      {/* Tam genişlik grid: sol görsel / sağ bilgiler */}
+      {/* Grid: sol görsel / sağ bilgiler */}
       <div
         style={{
           display: "grid",
@@ -340,7 +347,7 @@ const ProductDetail: React.FC = () => {
               Yenile
             </button>
 
-            {/* NEW: Fiyat geçmişi tablosu aç/kapat */}
+            {/* Tablo aç/kapat */}
             <button
               onClick={() => setShowTable((v) => !v)}
               style={{
@@ -353,11 +360,12 @@ const ProductDetail: React.FC = () => {
                 cursor: "pointer",
               }}
             >
-              {showTable ? "Tabloyu Gizle" : "Fiyat Geçmişi (Tablo)"}
+              {showTable ? "Tabloyu Gizle" : "Fiyat Geçmişi (Tablo)"
+              }
             </button>
           </div>
 
-          {/* NEW: Tablo alanı */}
+          {/* Tablo alanı */}
           {showTable && (
             <div
               style={{
@@ -376,7 +384,7 @@ const ProductDetail: React.FC = () => {
                   color: "#111827",
                 }}
               >
-                Fiyat Geçmişi (Tablo)
+                Fiyat Geçmişi (Son 10 Kayıt)
               </div>
               {tableData.length ? (
                 <div style={{ maxHeight: 260, overflow: "auto" }}>
@@ -419,16 +427,16 @@ const ProductDetail: React.FC = () => {
                     </thead>
                     <tbody>
                       {tableData.map((row, idx) => {
-                        const prev = tableData[idx + 1]?.price; // bir önceki (daha eski) kayıt
+                        const prev = tableData[idx + 1]?.price;
                         const hasPrev = typeof prev === "number" && !Number.isNaN(prev);
                         const delta = hasPrev ? Number(row.price) - Number(prev) : 0;
                         const up = delta > 0;
                         const down = delta < 0;
-                        const same = delta === 0;
                         const color = up ? "#991b1b" : down ? "#166534" : "#6b7280";
                         const bg = up ? "#fee2e2" : down ? "#dcfce7" : "transparent";
                         const arrow = up ? "▲" : down ? "▼" : "—";
-                        const pct = hasPrev && prev !== 0 ? Math.abs((delta / Number(prev)) * 100) : 0;
+                        const pct =
+                          hasPrev && prev !== 0 ? Math.abs((delta / Number(prev)) * 100) : 0;
 
                         return (
                           <tr key={`${row.date}-${idx}`}>
@@ -445,7 +453,17 @@ const ProductDetail: React.FC = () => {
                                 background: bg,
                                 borderRadius: 8,
                               }}
-                              title={hasPrev ? `${up ? "Önceye göre zam" : down ? "Önceye göre indirim" : "Değişim yok"}` : undefined}
+                              title={
+                                hasPrev
+                                  ? `${
+                                      up
+                                        ? "Önceye göre zam"
+                                        : down
+                                        ? "Önceye göre indirim"
+                                        : "Değişim yok"
+                                    }`
+                                  : undefined
+                              }
                             >
                               {Number(row.price).toLocaleString("tr-TR")} TL
                               {hasPrev && (
@@ -467,12 +485,12 @@ const ProductDetail: React.FC = () => {
           )}
 
           <div style={{ fontSize: 12, color: "#6b7280" }}>
-            Son güncellemeler grafik bölümünden takip edilebilir.
+            Grafik tüm geçmişi gösterir, tablo en fazla son 10 kaydı listeler.
           </div>
         </div>
       </div>
 
-      {/* Tam genişlik grafik kartı */}
+      {/* Grafik kartı */}
       <div
         style={{
           marginTop: 20,
@@ -484,16 +502,43 @@ const ProductDetail: React.FC = () => {
         }}
       >
         <h3 style={{ margin: 0, marginBottom: 10, fontSize: 16, color: "#111827" }}>
-          Fiyat Geçmişi
+          Fiyat Geçmişi (Tüm Kayıtlar)
         </h3>
         {chartData.length ? (
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis domain={["auto", "auto"]} />
-              <Tooltip />
-              <Line type="monotone" dataKey="price" stroke="#8884d8" />
+              {/* ISO'yu eksende gösterme, sadece render'da formatla */}
+              <XAxis
+                dataKey="dateISO"
+                tickFormatter={(v: string) =>
+                  new Date(v).toLocaleDateString("tr-TR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                  })
+                }
+                minTickGap={20}
+              />
+              <YAxis
+                domain={["auto", "auto"]}
+                tickFormatter={(v: number) => v.toLocaleString("tr-TR")}
+              />
+              <Tooltip
+                formatter={(value: number) => `${Number(value).toLocaleString("tr-TR")} TL`}
+                labelFormatter={(label: string) =>
+                  `Tarih: ${new Date(label).toLocaleString("tr-TR")}`
+                }
+                cursor={{ strokeDasharray: "3 3" }}
+              />
+              <Line
+                type="monotone"
+                dataKey="price"
+                name="Fiyat"
+                stroke="#8884d8"
+                dot={{ r: 4 }}
+                activeDot={{ r: 6, stroke: "#1d4ed8", strokeWidth: 2 }}
+                connectNulls
+              />
             </LineChart>
           </ResponsiveContainer>
         ) : (

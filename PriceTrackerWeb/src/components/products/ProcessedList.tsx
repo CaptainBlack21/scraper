@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { getProcessed } from "../../api/processedApi";
 import type { IProcessed } from "../../types/Processed";
+import { Link } from "react-router-dom";
 
-// ---- Güvenli yardımcılar ----
+// ---- Yardımcılar ----
 const safeNumber = (v: unknown): number | null => {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
@@ -176,9 +177,12 @@ const ProcessedList: React.FC = () => {
                   )}${Math.abs(p.diffPct).toFixed(2)}%)`
                 : "—";
 
+            const productId = (p as any).productId || p._id;
+
             return (
-              <div
+              <Link
                 key={p._id}
+                to={`/product/${productId}`}
                 style={{
                   border: "1px solid #e5e7eb",
                   borderRadius: 10,
@@ -188,9 +192,11 @@ const ProcessedList: React.FC = () => {
                   gridTemplateColumns: "auto 1fr auto",
                   gap: 10,
                   alignItems: "center",
+                  textDecoration: "none",
+                  color: "inherit",
                 }}
               >
-                {/* ✅ Resim ya da boş kutu */}
+                {/* Resim */}
                 <div
                   style={{
                     width: 45,
@@ -218,6 +224,7 @@ const ProcessedList: React.FC = () => {
                   )}
                 </div>
 
+                {/* Başlık + fiyatlar */}
                 <div style={{ minWidth: 0 }}>
                   <div
                     title={p.title}
@@ -289,25 +296,28 @@ const ProcessedList: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Amazon linki → button yaptık */}
                 {p.url && (
-                  <a
-                    href={p.url}
-                    target="_blank"
-                    rel="noreferrer"
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // ✅ Detay sayfasına gitmeyi engeller
+                      window.open(p.url, "_blank", "noopener,noreferrer");
+                    }}
                     style={{
-                      textDecoration: "none",
                       background: "#10b981",
                       color: "#fff",
                       borderRadius: 8,
                       padding: "6px 10px",
                       fontSize: 12,
                       fontWeight: 600,
+                      border: "none",
+                      cursor: "pointer",
                     }}
                   >
                     Gör
-                  </a>
+                  </button>
                 )}
-              </div>
+              </Link>
             );
           })
         )}

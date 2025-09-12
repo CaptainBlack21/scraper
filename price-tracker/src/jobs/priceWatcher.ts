@@ -54,7 +54,7 @@ export function startPriceWatcher() {
           continue;
         }
 
-        // ✅ Yeni: resim kaydet/güncelle
+        // ✅ Resim güncelle
         if (res.image && (!product.image || product.image !== res.image)) {
           product.image = res.image;
         }
@@ -67,7 +67,6 @@ export function startPriceWatcher() {
             product.currentPrice = next;
             product.priceHistory = product.priceHistory || [];
             product.priceHistory.push({ price: next, date: new Date() });
-            if (product.priceHistory.length > 4) product.priceHistory.shift();
 
             if (product.alarmPrice > 0 && next <= product.alarmPrice) {
               try {
@@ -90,19 +89,18 @@ export function startPriceWatcher() {
             const direction: "up" | "down" | "same" =
               diff > 0 ? "up" : diff < 0 ? "down" : "same";
 
-           await new ProcessedProduct({
-                productId: product._id, // ✅ artık ObjectId
-                title: product.title ?? "Ürün",
-                url: product.url,
-                image: product.image,
-                prevPrice: prev,
-                newPrice: next,
-                diff,
-                diffPct,
-                direction,
-                processedAt: new Date(),
-              }).save();
-
+            await new ProcessedProduct({
+              productId: product._id, // ✅ artık ObjectId
+              title: product.title ?? "Ürün",
+              url: product.url,
+              image: product.image,
+              prevPrice: prev,
+              newPrice: next,
+              diff,
+              diffPct,
+              direction,
+              processedAt: new Date(),
+            }).save();
           }
         }
       } catch (e: any) {
