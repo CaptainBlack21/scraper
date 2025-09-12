@@ -113,6 +113,20 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           Alarm Fiyatı: {formatTL(product.alarmPrice as number | null)}
         </p>
 
+        {/* ✅ Stok bilgisi */}
+        <p
+          style={{
+            margin: 0,
+            fontSize: "0.9rem",
+            fontWeight: 500,
+            color: product.stockStatus?.toLowerCase().includes("yok")
+              ? "#dc2626" // kırmızı
+              : "#16a34a", // yeşil
+          }}
+        >
+          {product.stockStatus ?? "Stok durumu bilinmiyor"}
+        </p>
+
         <a
           href={product.url}
           target="_blank"

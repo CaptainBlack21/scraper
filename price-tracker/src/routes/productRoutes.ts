@@ -3,7 +3,8 @@ import Product from "../models/Product";
 import { scrapeAmazonProduct } from "../services/scraper";
 import type { PipelineStage } from "mongoose"; // ✅ EKLE
 
-export const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+export const escapeRegex = (s: string) =>
+  s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const router = express.Router();
 
@@ -23,7 +24,8 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "Ürün zaten mevcut." });
     }
 
-    const { title, price, image } = await scrapeAmazonProduct(url); // ✅ image alındı
+    // ✅ scrapeAmazonProduct artık stockStatus da döndürüyor
+    const { title, price, image, stockStatus } = await scrapeAmazonProduct(url);
 
     if (!title) {
       return res.status(400).json({ error: "Başlık bulunamadı!" });
@@ -37,19 +39,26 @@ router.post("/", async (req, res) => {
       title,
       currentPrice: price,
       priceHistory: [{ price, date: new Date() }],
-      image: image ?? null, // ✅ kaydet
+      image: image ?? null,             // ✅ resim kaydet
+      stockStatus: stockStatus ?? null, // ✅ stok durumu kaydet
     });
 
     await product.save();
     res.json(product);
   } catch (err: any) {
-    if (typeof err?.message === "string" && err.message.includes("Fiyat bulunamadı")) {
+    if (
+      typeof err?.message === "string" &&
+      err.message.includes("Fiyat bulunamadı")
+    ) {
       res.status(400).json({ error: "Fiyat bulunamadı!" });
     } else {
-      res.status(500).json({ error: "Ürün eklenirken bir hata oluştu." });
+      res
+        .status(500)
+        .json({ error: "Ürün eklenirken bir hata oluştu." });
     }
   }
 });
+
 /**
  * Tüm ürünleri getir — alarmı vuranlar en üstte
  */
@@ -84,7 +93,9 @@ router.get("/", async (_req, res) => {
 
     res.json(products);
   } catch {
-    res.status(500).json({ error: "Ürünler getirilirken bir hata oluştu." });
+    res
+      .status(500)
+      .json({ error: "Ürünler getirilirken bir hata oluştu." });
   }
 });
 
@@ -95,12 +106,17 @@ router.get("/", async (_req, res) => {
  */
 router.get("/search", async (req, res) => {
   try {
-    const { q = "", page = "1", limit = "20" } = req.query as Record<string, string>;
+    const { q = "", page = "1", limit = "20" } = req.query as Record<
+      string,
+      string
+    >;
     const p = Math.max(parseInt(page, 10) || 1, 1);
     const l = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
 
     if (!q.trim()) {
-      return res.status(400).json({ error: "Arama terimi (q) gerekli." });
+      return res
+        .status(400)
+        .json({ error: "Arama terimi (q) gerekli." });
     }
 
     const regex = new RegExp(escapeRegex(q.trim()), "i");
@@ -129,8 +145,14 @@ router.get("/search", async (req, res) => {
           },
         },
       },
-      // ⬇️ Literal -1 kullandık ki tip "number"e genişlemesin
-      { $sort: { alarmHit: -1 as -1, alarmDiff: -1 as -1, updatedAt: -1 as -1, _id: -1 as -1 } },
+      {
+        $sort: {
+          alarmHit: -1 as -1,
+          alarmDiff: -1 as -1,
+          updatedAt: -1 as -1,
+          _id: -1 as -1,
+        },
+      },
       {
         $facet: {
           items: [
@@ -170,7 +192,9 @@ router.delete("/:id", async (req, res) => {
     }
     res.json({ message: "Ürün silindi" });
   } catch {
-    res.status(500).json({ error: "Ürün silinirken bir hata oluştu" });
+    res
+      .status(500)
+      .json({ error: "Ürün silinirken bir hata oluştu" });
   }
 });
 
@@ -182,18 +206,23 @@ router.put("/:id/alarm", async (req, res) => {
     const { alarmPrice } = req.body;
 
     if (alarmPrice == null || isNaN(Number(alarmPrice))) {
-      return res.status(400).json({ error: "Geçerli bir alarmPrice gerekli." });
+      return res
+        .status(400)
+        .json({ error: "Geçerli bir alarmPrice gerekli." });
     }
 
     const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ error: "Ürün bulunamadı" });
+    if (!product)
+      return res.status(404).json({ error: "Ürün bulunamadı" });
 
     product.alarmPrice = Number(alarmPrice);
     await product.save();
 
     res.json({ message: "Alarm fiyatı güncellendi", product });
   } catch {
-    res.status(500).json({ error: "Alarm fiyatı güncellenemedi" });
+    res
+      .status(500)
+      .json({ error: "Alarm fiyatı güncellenemedi" });
   }
 });
 

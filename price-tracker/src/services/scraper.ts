@@ -15,7 +15,8 @@ export type ScrapeResult = {
   price?: number;
   currency?: string;
   rawPriceText?: string;
-  image?: string; // ✅ Yeni alan
+  image?: string;
+  stockStatus?: string;   // ✅ Yeni alan
   etag?: string | null;
   lastModified?: string | null;
   notModified?: boolean;
@@ -131,29 +132,29 @@ function extractPriceAndCurrency($: cheerio.CheerioAPI): {
 
 // ✅ Yeni: ürün resmini çek
 function extractImage($: cheerio.CheerioAPI): string | undefined {
-  // 1. landingImage src
   let img = $("#imgTagWrapperId img#landingImage").attr("src");
 
-  // 2. landingImage data-a-dynamic-image
   if (!img) {
     const dataImg = $("#imgTagWrapperId img#landingImage").attr("data-a-dynamic-image");
     if (dataImg) {
       try {
         const parsed = JSON.parse(dataImg);
-        img = Object.keys(parsed)[0]; // ilk key büyük ihtimalle ana resim URL’si
+        img = Object.keys(parsed)[0];
       } catch {}
     }
   }
 
-  // 3. Kitap kapağı gibi bazı özel durumlar
   if (!img) img = $("#imgBlkFront").attr("src");
-
-  // 4. OpenGraph fallback
   if (!img) img = $('meta[property="og:image"]').attr("content");
 
   return img || undefined;
 }
 
+// ✅ Yeni: stok durumu çek
+function extractStockStatus($: cheerio.CheerioAPI): string | undefined {
+  const availability = $("#availability").text().trim();
+  return availability || undefined;
+}
 
 export async function scrapeAmazonProduct(
   url: string,
@@ -206,14 +207,16 @@ export async function scrapeAmazonProduct(
     if (price == null || !Number.isFinite(price))
       throw new Error(`Fiyat sayıya dönüştürülemedi: "${priceText}"`);
 
-    const image = extractImage($); // ✅ Yeni
+    const image = extractImage($);
+    const stockStatus = extractStockStatus($); // ✅ stok durumu
 
     return {
       title,
       price,
       currency,
       rawPriceText: priceText,
-      image, // ✅ Yeni
+      image,
+      stockStatus, // ✅ eklendi
       etag: res.headers["etag"] ?? null,
       lastModified: res.headers["last-modified"] ?? null,
       notModified: false,

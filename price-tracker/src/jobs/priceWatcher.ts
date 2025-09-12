@@ -59,6 +59,11 @@ export function startPriceWatcher() {
           product.image = res.image;
         }
 
+        // ✅ Stok durumu güncelle
+        if (res.stockStatus && res.stockStatus !== product.stockStatus) {
+          product.stockStatus = res.stockStatus;
+        }
+
         if (typeof res.price === "number") {
           const prev = product.currentPrice ?? 0;
           const next = res.price;

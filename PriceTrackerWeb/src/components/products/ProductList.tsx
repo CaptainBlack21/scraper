@@ -54,6 +54,7 @@ const ProductList: React.FC<Props> = ({ searchQuery }) => {
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {products.map((p) => (
           <div key={p._id} style={{ width: "100%" }}>
+            {/* ProductCard’a tüm product objesi gönderiyoruz */}
             <ProductCard product={p} />
           </div>
         ))}

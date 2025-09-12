@@ -124,7 +124,7 @@ const ProductDetail: React.FC = () => {
               fontWeight: 600,
             }}
           >
-            ← Ana Sayfa
+          ← Ana Sayfa
           </Link>
         </div>
 
@@ -296,6 +296,20 @@ const ProductDetail: React.FC = () => {
                 ? `${product.alarmPrice.toLocaleString("tr-TR")} TL`
                 : "—"}
             </span>
+            {/* ⬅️ Stok alanı eklendi */}
+            <span
+              style={{
+                background: "#f3f4f6",
+                color: "#374151",
+                border: "1px solid #e5e7eb",
+                borderRadius: 999,
+                padding: "6px 12px",
+                fontSize: 13,
+              }}
+            >
+              Stok: {product.stockStatus ?? "—"}
+            </span>
+            {/* ⬅️ Stok alanı eklendi - SON */}
             {alarmHit && (
               <span
                 style={{

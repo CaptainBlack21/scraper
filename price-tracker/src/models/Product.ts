@@ -18,7 +18,8 @@ export interface ProductDoc extends Document {
   currentPrice: number;
   priceHistory: PricePoint[];
   alarmPrice: number;
-  image?: string | null; // ✅ Yeni alan
+  image?: string | null;
+  stockStatus?: string | null;   // ✅ Yeni alan
 
   lastEtag?: string | null;
   lastModified?: string | null;
@@ -42,7 +43,8 @@ const ProductSchema = new Schema<ProductDoc>(
     currentPrice: { type: Number, default: 0 },
     priceHistory: { type: [PricePointSchema], default: [] },
     alarmPrice: { type: Number, default: 0 },
-    image: { type: String, default: null }, // ✅ Yeni alan
+    image: { type: String, default: null },
+    stockStatus: { type: String, default: null },   // ✅ Yeni alan
 
     lastEtag: { type: String, default: null },
     lastModified: { type: String, default: null },
